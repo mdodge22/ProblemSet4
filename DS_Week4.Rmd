@@ -106,10 +106,12 @@ world <- get_stamenmap(
 ggmap(world) + 
   geom_point(data = Starbucks, 
              aes(x = Longitude, y = Latitude, color = `Ownership Type`), 
-             alpha = .4, 
+             alpha = .9, 
              size = .4) +
   theme_map()
 ```
+
+From the above visualization, we can see that in the Americas the Starbucks are almost all company owned or licensed. There is a similar pattern in Western Europe, except there are some that franchised. In Eastern Europe and Asia there are a mix of licensed, company owned and joint ventures. My theory is that the ownership type depend on the different regulations found in different countries,k along with cultural differences that may make it beneficial for Starbucks to go the route of a joint venture.  
 
   2. Construct a new map of Starbucks locations in the Twin Cities metro area (approximately the 5 county metro area).  
 
