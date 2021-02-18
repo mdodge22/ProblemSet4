@@ -230,7 +230,40 @@ starbucks_with_2018_pop_est %>%
   * If there are other variables you want to add that could enhance your plot, do that now.  
   
 ```{r}
+favorite_places <- tibble(place = c("Macalester College", "Mom's House",
+                                    "Dad's House", "Home", 
+                                    "Aldine Park", "Stone Arch Bridge", 
+                                    "Midtown Global Market", "Soberfish",
+                                    "Fuller Park", "Cedar Lake", 
+                                    "Girlfriends Apartment"),
+                          long = c(-93.17123, -93.27401,
+                                   -93.27654, -93.16485, 
+                                   -93.17272, -93.2581,
+                                   -93.26080, -93.23320, 
+                                   -93.28508,-93.31321,
+                                   -93.16662),
+                          lat = c(44.93789, 44.90619, 
+                                  44.91861, 44.94636, 
+                                  44.94979, 44.98015,
+                                  44.94932, 44.96262, 
+                                  44.91547, 44.96069,
+                                   44.94640),
+                          top_3 = c("yes", "no", "no", "yes", "no", 
+                                    "no", "no", "no", "no", "no", "yes"))
 
+pal <- colorFactor("RdYlBu",
+                    domain = favorite_places$top_3)
+ 
+leaflet(data = favorite_places) %>%
+  addProviderTiles(providers$Stamen.Watercolor) %>% 
+  addCircles(lng = ~long,
+             lat = ~lat,
+             opacity = 1,
+             color = ~pal(top_3),
+             label = ~place) %>% 
+  addPolylines(lng = ~long,
+               lat = ~lat,
+               color = col2hex("dodgerblue4"))
 ```
   
 ## Revisiting old datasets
