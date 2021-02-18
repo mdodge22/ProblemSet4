@@ -1,6 +1,6 @@
 ---
 title: 'Weekly Exercises #4'
-author: "Put your name here"
+author: "Max Dodge"
 output: 
   html_document:
     keep_md: TRUE
@@ -222,15 +222,252 @@ These exercises will reiterate what you learned in the "Mapping data with R" tut
 
 ### Starbucks locations (`ggmap`)
 
-  1. Add the `Starbucks` locations to a world map. Add an aesthetic to the world map that sets the color of the points according to the ownership type. What, if anything, can you deduce from this visualization?  
+  1. Add the `Starbucks` locations to a world map. Add an aesthetic to the world map that sets the color of the points according to the ownership type. What, if anything, can you deduce from this visualization?
+  
+
+
+```r
+world <- get_stamenmap(
+    bbox = c(left = -180, bottom = -57, right = 179, top = 82.1), 
+    maptype = "terrain",
+    zoom = 2)
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/0/0.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/1/0.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/2/0.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/3/0.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/0/1.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/1/1.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/2/1.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/3/1.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/0/2.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/1/2.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/2/2.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/2/3/2.png
+```
+
+```r
+ggmap(world) + 
+  geom_point(data = Starbucks, 
+             aes(x = Longitude, y = Latitude, color = `Ownership Type`), 
+             alpha = .9, 
+             size = .4) +
+  theme_map()
+```
+
+```
+## Warning: Removed 1 rows containing missing values (geom_point).
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+
+From the above visualization, we can see that in the Americas the Starbucks are almost all company owned or licensed. There is a similar pattern in Western Europe, except there are some that franchised. In Eastern Europe and Asia there are a mix of licensed, company owned and joint ventures. My theory is that the ownership type depend on the different regulations found in different countries,k along with cultural differences that may make it beneficial for Starbucks to go the route of a joint venture.  
 
   2. Construct a new map of Starbucks locations in the Twin Cities metro area (approximately the 5 county metro area).  
 
+
+```r
+MSP <- get_stamenmap(
+    bbox = c(left = -94.1, bottom = 44.7, right = -92.5, top = 45.4), 
+    maptype = "terrain",
+    zoom = 9)
+```
+
+```
+## Source : http://tile.stamen.com/terrain/9/122/183.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/9/123/183.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/9/124/183.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/9/122/184.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/9/123/184.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/9/124/184.png
+```
+
+```r
+ggmap(MSP) + 
+  geom_point(data = Starbucks, 
+             aes(x = Longitude, y = Latitude, color = `Ownership Type`), 
+             alpha = .9, 
+             size = 1) +
+  theme_map()
+```
+
+```
+## Warning: Removed 25449 rows containing missing values (geom_point).
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
   3. In the Twin Cities plot, play with the zoom number. What does it do?  (just describe what it does - don't actually include more than one map).  
 
+The zoom number varies the amount of detail in each map. A zoom of one would show the same region but in far less detail. A zoom of 10 would show the same region but with very intricate details such as place names, roads, and cities.
+
   4. Try a couple different map types (see `get_stamenmap()` in help and look at `maptype`). Include a map with one of the other map types.  
+  
+
+```r
+world <- get_stamenmap(
+    bbox = c(left = -180, bottom = -57, right = 179, top = 82.1), 
+    maptype = "watercolor",
+    zoom = 2)
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/0/0.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/1/0.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/2/0.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/3/0.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/0/1.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/1/1.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/2/1.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/3/1.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/0/2.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/1/2.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/2/2.jpg
+```
+
+```
+## Source : http://tile.stamen.com/watercolor/2/3/2.jpg
+```
+
+```r
+ggmap(world) +
+  theme_map()
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
   5. Add a point to the map that indicates Macalester College and label it appropriately. There are many ways you can do think, but I think it's easiest with the `annotate()` function (see `ggplot2` cheatsheet).
+  
+
+```r
+mac <- tibble(place = "Macalester College",
+              long = -93.1712321,
+              lat = 44.9378965)
+
+STP <- get_stamenmap(
+    bbox = c(left = -93.26, bottom = 44.87, right = -92.87, top = 45), 
+    maptype = "terrain",
+    zoom = 11)
+```
+
+```
+## Source : http://tile.stamen.com/terrain/11/493/736.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/11/494/736.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/11/495/736.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/11/493/737.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/11/494/737.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/11/495/737.png
+```
+
+```r
+ggmap(STP) + 
+  geom_point(data = mac, 
+             aes(x = long, y = lat, label = place)) +
+  annotate('text', x = -93.171, y = 44.945, 
+           label = "Macalester College", size = 4, color = "dodgerblue4") +
+  theme_map()
+```
+
+```
+## Warning: Ignoring unknown aesthetics: label
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 ### Choropleth maps with Starbucks data (`geom_map()`)
 
@@ -262,6 +499,26 @@ starbucks_with_2018_pop_est <-
 ```
 
   6. **`dplyr` review**: Look through the code above and describe what each line of code does.
+  
+  -Creates and names the new data set.
+  
+  -Reads in the CSV (Comma Separated Values) file 
+  
+  -Separates the state variable into "dot" and "State" to remove the period.
+  
+  -Takes out the dot variable.
+  
+  -Converts the strings to lowercase for each State.
+  
+  -Creates and names the new data set.
+  
+  -Calls the starbucks_us_by_state data set and pipes it into the next line.
+  
+  -Joins it from the left 
+  
+  -By state/state_name
+  
+  -Creates a new variable called "starbucks_per_10000" which is the number of Starbucks per 10000 people in each state.
 
   7. Create a choropleth map that shows the number of Starbucks per 10,000 people on a map of the US. Use a new fill color, add points for all Starbucks in the US (except Hawaii and Alaska), add an informative title for the plot, and include a caption that says who created the plot (you!). Make a conclusion about what you observe.
 
