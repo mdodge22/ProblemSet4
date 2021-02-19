@@ -408,11 +408,12 @@ These exercises use the datasets `MplsStops` and `MplsDemo` from the `carData` l
   
 ```{r}
 mpls_suspicious <- MplsStops %>%
-  mutate(sus = ifelse(problem == "suspicious", 1, 0),
-         prop_sus = sum(sus)/n()) %>% 
+  mutate(sus = ifelse(problem == "suspicious", 1, 0)) %>% 
   group_by(neighborhood) %>% 
-  mutate(stops_per_neighbr = n()) %>% 
-  arrange(desc(stops_per_neighbr)) 
+  mutate(stops_per_neighbr = n(),
+         prop_sus = sum(sus)/n()) %>% 
+  arrange(desc(stops_per_neighbr)) %>% 
+  top_n(n = 1, wt = date)
 
 mpls_suspicious
 ```
@@ -441,13 +442,54 @@ leaflet(data = MplsStops) %>%
 ```{r}
 mpls_nbhd <- st_read("Minneapolis_Neighborhoods-20210218//Minneapolis_Neighborhoods.shp", quiet = TRUE)
 
-mpls_all
+mpls_all <- mpls_nbhd %>% 
+  mutate(neighborhood = BDNAME) %>% 
+  left_join(MplsDemo,
+            by = "neighborhood") %>% 
+  left_join(mpls_suspicious,
+            by = "neighborhood")
 ```
 
   17. Use `leaflet` to create a map from the `mpls_all` data  that colors the neighborhoods by `prop_suspicious`. Display the neighborhood name as you scroll over it. Describe what you observe in the map.
   
+```{r}
+pal3 <- colorNumeric("viridis", 
+                     domain = mpls_all$prop_sus)
+
+leaflet(data = mpls_all) %>%
+  addProviderTiles(providers$Stamen.Terrain) %>% 
+  addPolygons(fillColor = ~pal3(prop_sus),
+              fillOpacity = .8,
+              label = ~neighborhood) %>% 
+  addLegend(pal = pal3, 
+            values = ~prop_sus, 
+            opacity = 0.7, 
+            title = "% Pulled over on Suspicion",
+            position = "bottomright") 
+```
+ 
+There seems to be a much higher proportion of people pulled over for suspicion in the south east part of the city. Where north of downtown there is a fairly small proportion. 
+ 
   18. Use `leaflet` to create a map of your own choosing. Come up with a question you want to try to answer and use the map to help answer that question. Describe what your map shows. 
   
+I want to create a map of Minneapolis that shows the average income in each neighborhood, and see how that compares to the first map.
+
+```{r}
+pal4 <- colorNumeric("viridis", 
+                     domain = mpls_all$hhIncome)
+
+leaflet(data = mpls_all) %>%
+  addProviderTiles(providers$Stamen.Terrain) %>% 
+  addPolygons(fillColor = ~pal4(hhIncome),
+              fillOpacity = .8,
+              label = ~neighborhood) %>% 
+  addLegend(pal = pal4, 
+            values = ~hhIncome, 
+            opacity = 0.8, 
+            title = "Average Income",
+            position = "bottomright") 
+```
+My map shows that the South East area of the city one of the more middle class areas of the city. The wealthiest areas are in South Minneapolis, but are concentrated on the western side of the city. There is a small percentage of people pulled over for suspicion in those very wealthy areas. 
   
 ## GitHub link
 
