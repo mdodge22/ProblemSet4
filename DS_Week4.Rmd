@@ -296,28 +296,36 @@ Stations<-read_csv("http://www.macalester.edu/~dshuman1/data/112/DC-Stations.csv
   
 ```{r}
 Trips_stat <- Trips %>% 
-  mutate(name = sstation) %>% 
+  mutate(name = sstation) %>%
+  left_join(Stations, by = c("name")) %>% 
+  mutate(cas = client == "Casual") %>% 
   group_by(name) %>% 
-  mutate(departures = n()) %>% 
-  left_join(Stations,
-            by = "name")
+  mutate(departures = n(),
+         cas_pct = sum(cas)/departures)
 
 DC <- get_stamenmap(
     bbox = c(left = -77.4, bottom = 38.8, right = -76.7, top = 39.05), 
     maptype = "terrain",
-    zoom = 9)
+    zoom = 10)
 
 ggmap(DC) + 
   geom_point(data = Trips_stat, 
              aes(x = long, y = lat, color = departures)) +
-  theme_map()
+  theme_map() +
+  labs(title = "DC Bike Stations by Number of Departures")
 ```
   
   10. Only 14.4% of the trips in our data are carried out by casual users. Create a plot that shows which area(s) have stations with a much higher percentage of departures by casual users. What patterns do you notice? Also plot this on top of a map. I think it will be more clear what the patterns are.
   
 ```{r}
-
+ggmap(DC) + 
+  geom_point(data = Trips_stat, 
+             aes(x = long, y = lat, color = cas_pct)) +
+  theme_map() +
+  labs(title = "DC Bike Stations by Proportion of Casual Riders")
 ```
+  
+The patterns clearly show that the casual riders are concentrated in the city center, most likely tourists, while the registered riders are in the suburbs, likely commuters.
   
 ### COVID-19 data
 
@@ -325,15 +333,84 @@ The following exercises will use the COVID-19 data from the NYT.
 
   11. Create a map that colors the states by the most recent cumulative number of COVID-19 cases (remember, these data report cumulative numbers so you don't need to compute that). Describe what you see. What is the problem with this map?
   
-  12. Now add the population of each state to the dataset and color the states by most recent cumulative cases/10,000 people. See the code for doing this with the Starbucks data. You will need to make some modifications. 
+```{r}
+state_covid <- map_data("state")
+
+covid_bystate <- covid19 %>% 
+  group_by(state) %>% 
+  arrange(desc(date)) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  top_n(n = 1, wt = date)
+
+covid_bystate %>% 
+  ggplot() +
+  geom_map(map = state_covid,
+           aes(map_id = state, fill = cases)) +
+  expand_limits(x = state_covid$long, y = state_covid$lat) +
+  theme_map() +
+  labs(title = "Cumulative COVID Cases by State as of 2/17")
+```
+
+California, Texas, New York and Florida have the highest cumulative case count. This is because there is no controlling for population so it would make sense that the states with the highest population would have the most cases.
+  
+  12. Now add the population of each state to the dataset and color the states by most recent cumulative cases/10,000 people. See the code for doing this with the Starbucks data. You will need to make some modifications.
+  
+```{r}
+covid_bystate2 <- covid19 %>% 
+  group_by(state) %>% 
+  arrange(desc(date)) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  top_n(n = 1, wt = date) %>% 
+  left_join(census_pop_est_2018, 
+            by = "state") %>% 
+  mutate(cases_per10k = (cases/est_pop_2018)*10000)
+
+covid_bystate2 %>% 
+  ggplot() +
+  geom_map(map = state_covid,
+           aes(map_id = state, fill = cases_per10k)) +
+  expand_limits(x = state_covid$long, y = state_covid$lat) +
+  theme_map() +
+  labs(title = "Cumulative COVID Cases per 10,000 by State as of 2/17")
+```
   
   13. **CHALLENGE** Choose 4 dates spread over the time period of the data and create the same map as in exercise 12 for each of the dates. Display the four graphs together using faceting. What do you notice?
   
+```{r}
+covid_bystate3 <- covid19 %>% 
+  group_by(state) %>% 
+  filter(date %in% c(as.Date("2020-12-15"),
+                     as.Date("2020-10-15"),
+                     as.Date("2020-8-15"),
+                     as.Date("2020-6-15"))) %>% 
+  mutate(state = str_to_lower(state)) %>%
+  left_join(census_pop_est_2018, 
+            by = "state") %>% 
+  mutate(cases_per10k = (cases/est_pop_2018)*10000)
+
+covid_bystate3 %>% 
+  ggplot() +
+  geom_map(map = state_covid,
+           aes(map_id = state, fill = cases_per10k)) +
+  expand_limits(x = state_covid$long, y = state_covid$lat) +
+  theme_map() +
+  facet_wrap(vars(date)) +
+  labs(title = "Cumulative COVID Cases per 10,000 by State")
+```
+
 ## Minneapolis police stops
 
 These exercises use the datasets `MplsStops` and `MplsDemo` from the `carData` library. Search for them in Help to find out more information.
 
-  14. Use the `MplsStops` dataset to find out how many stops there were for each neighborhood and the proportion of stops that were for a suspicious vehicle or person. Sort the results from most to least number of stops. Save this as a dataset called `mpls_suspicious` and display the table.  
+  14. Use the `MplsStops` dataset to find out how many stops there were for each neighborhood and the proportion of stops that were for a suspicious vehicle or person. Sort the results from most to least number of stops. Save this as a dataset called `mpls_suspicious` and display the table.
+  
+```{r}
+mpls_suspicious <- MplsStops %>% 
+  group_by(neighborhood) %>% 
+  mutate(stops_per_neighbr = n())
+  
+```
+
   
   15. Use a `leaflet` map and the `MplsStops` dataset to display each of the stops on a map as a small point. Color the points differently depending on whether they were for suspicious vehicle/person or a traffic stop (the `problem` variable). HINTS: use `addCircleMarkers`, set `stroke = FAlSE`, use `colorFactor()` to create a palette.  
   

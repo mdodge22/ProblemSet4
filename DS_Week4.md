@@ -522,6 +522,20 @@ starbucks_with_2018_pop_est <-
 
   7. Create a choropleth map that shows the number of Starbucks per 10,000 people on a map of the US. Use a new fill color, add points for all Starbucks in the US (except Hawaii and Alaska), add an informative title for the plot, and include a caption that says who created the plot (you!). Make a conclusion about what you observe.
 
+
+```r
+states_map <- map_data("state")
+
+starbucks_with_2018_pop_est %>% 
+  ggplot() +
+  geom_map(map = states_map,
+           aes(map_id = state_name, fill = starbucks_per_10000)) +
+  expand_limits(x = states_map$long, y = states_map$lat) +
+  theme_map()
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 ### A few of your favorite things (`leaflet`)
 
   8. In this exercise, you are going to create a single map of some of your favorite places! The end result will be one map that satisfies the criteria below. 
@@ -533,6 +547,53 @@ starbucks_with_2018_pop_est <-
   * Connect all your locations together with a line in a meaningful way (you may need to order them differently in the original data).  
   
   * If there are other variables you want to add that could enhance your plot, do that now.  
+  
+
+```r
+favorite_places <- tibble(place = c("Macalester College", "Mom's House",
+                                    "Dad's House", "Home", 
+                                    "Aldine Park", "Stone Arch Bridge", 
+                                    "Midtown Global Market", "Soberfish",
+                                    "Fuller Park", "Cedar Lake", 
+                                    "Girlfriends Apartment"),
+                          long = c(-93.17123, -93.27401,
+                                   -93.27654, -93.16485, 
+                                   -93.17272, -93.2581,
+                                   -93.26080, -93.23320, 
+                                   -93.28508,-93.31321,
+                                   -93.16662),
+                          lat = c(44.93789, 44.90619, 
+                                  44.91861, 44.94636, 
+                                  44.94979, 44.98015,
+                                  44.94932, 44.96262, 
+                                  44.91547, 44.96069,
+                                   44.94640),
+                          top_3 = c("yes", "no", "no", "yes", "no", 
+                                    "no", "no", "no", "no", "no", "yes"))
+
+pal <- colorFactor("RdYlBu",
+                    domain = favorite_places$top_3)
+ 
+leaflet(data = favorite_places) %>%
+  addProviderTiles(providers$Stamen.Watercolor) %>% 
+  addCircles(lng = ~long,
+             lat = ~lat,
+             opacity = 1,
+             color = ~pal(top_3),
+             label = ~place) %>% 
+  addPolylines(lng = ~long,
+               lat = ~lat,
+               color = col2hex("dodgerblue4")) %>% 
+  addLegend(position = "bottomright",
+            title = "Top 3",
+            pal = pal,
+            values = ~top_3)
+```
+
+```{=html}
+<div id="htmlwidget-f671952dd1d8190a5300" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f671952dd1d8190a5300">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addProviderTiles","args":["Stamen.Watercolor",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircles","args":[[44.93789,44.90619,44.91861,44.94636,44.94979,44.98015,44.94932,44.96262,44.91547,44.96069,44.9464],[-93.17123,-93.27401,-93.27654,-93.16485,-93.17272,-93.2581,-93.2608,-93.2332,-93.28508,-93.31321,-93.16662],10,null,null,{"interactive":true,"className":"","stroke":true,"color":["#91BFDB","#FC8D59","#FC8D59","#91BFDB","#FC8D59","#FC8D59","#FC8D59","#FC8D59","#FC8D59","#FC8D59","#91BFDB"],"weight":5,"opacity":1,"fill":true,"fillColor":["#91BFDB","#FC8D59","#FC8D59","#91BFDB","#FC8D59","#FC8D59","#FC8D59","#FC8D59","#FC8D59","#FC8D59","#91BFDB"],"fillOpacity":0.2},null,null,["Macalester College","Mom's House","Dad's House","Home","Aldine Park","Stone Arch Bridge","Midtown Global Market","Soberfish","Fuller Park","Cedar Lake","Girlfriends Apartment"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null,null]},{"method":"addPolylines","args":[[[[{"lng":[-93.17123,-93.27401,-93.27654,-93.16485,-93.17272,-93.2581,-93.2608,-93.2332,-93.28508,-93.31321,-93.16662],"lat":[44.93789,44.90619,44.91861,44.94636,44.94979,44.98015,44.94932,44.96262,44.91547,44.96069,44.9464]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#104E8B","weight":5,"opacity":0.5,"fill":false,"fillColor":"#104E8B","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FC8D59","#91BFDB"],"labels":["no","yes"],"na_color":null,"na_label":"NA","opacity":0.5,"position":"bottomright","type":"factor","title":"Top 3","extra":null,"layerId":null,"className":"info legend","group":null}]}],"limits":{"lat":[44.90619,44.98015],"lng":[-93.31321,-93.16485]}},"evals":[],"jsHooks":[]}</script>
+```
   
 ## Revisiting old datasets
 
@@ -572,10 +633,77 @@ Stations<-read_csv("http://www.macalester.edu/~dshuman1/data/112/DC-Stations.csv
   9. Use the latitude and longitude variables in `Stations` to make a visualization of the total number of departures from each station in the `Trips` data. Use either color or size to show the variation in number of departures. This time, plot the points on top of a map. Use any of the mapping tools you'd like.
   
 
+```r
+Trips_stat <- Trips %>% 
+  mutate(name = sstation) %>%
+  left_join(Stations, by = c("name")) %>% 
+  mutate(cas = client == "Casual") %>% 
+  group_by(name) %>% 
+  mutate(departures = n(),
+         cas_pct = sum(cas)/departures)
+
+DC <- get_stamenmap(
+    bbox = c(left = -77.4, bottom = 38.8, right = -76.7, top = 39.05), 
+    maptype = "terrain",
+    zoom = 10)
+```
+
+```
+## Source : http://tile.stamen.com/terrain/10/291/391.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/10/292/391.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/10/293/391.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/10/291/392.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/10/292/392.png
+```
+
+```
+## Source : http://tile.stamen.com/terrain/10/293/392.png
+```
+
+```r
+ggmap(DC) + 
+  geom_point(data = Trips_stat, 
+             aes(x = long, y = lat, color = departures)) +
+  theme_map() +
+  labs(title = "DC Bike Stations by Number of Departures")
+```
+
+```
+## Warning: Removed 12347 rows containing missing values (geom_point).
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
   
   10. Only 14.4% of the trips in our data are carried out by casual users. Create a plot that shows which area(s) have stations with a much higher percentage of departures by casual users. What patterns do you notice? Also plot this on top of a map. I think it will be more clear what the patterns are.
   
 
+```r
+ggmap(DC) + 
+  geom_point(data = Trips_stat, 
+             aes(x = long, y = lat, color = cas_pct)) +
+  theme_map() +
+  labs(title = "DC Bike Stations by Proportion of Casual Riders")
+```
+
+```
+## Warning: Removed 12347 rows containing missing values (geom_point).
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+  
+The patterns clearly show that the casual riders are concentrated in the city center, most likely tourists, while the registered riders are in the suburbs, likely commuters.
   
 ### COVID-19 data
 
@@ -583,10 +711,80 @@ The following exercises will use the COVID-19 data from the NYT.
 
   11. Create a map that colors the states by the most recent cumulative number of COVID-19 cases (remember, these data report cumulative numbers so you don't need to compute that). Describe what you see. What is the problem with this map?
   
-  12. Now add the population of each state to the dataset and color the states by most recent cumulative cases/10,000 people. See the code for doing this with the Starbucks data. You will need to make some modifications. 
+
+```r
+state_covid <- map_data("state")
+
+covid_bystate <- covid19 %>% 
+  group_by(state) %>% 
+  arrange(desc(date)) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  top_n(n = 1, wt = date)
+
+covid_bystate %>% 
+  ggplot() +
+  geom_map(map = state_covid,
+           aes(map_id = state, fill = cases)) +
+  expand_limits(x = state_covid$long, y = state_covid$lat) +
+  theme_map() +
+  labs(title = "Cumulative COVID Cases by State as of 2/17")
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+
+California, Texas, New York and Florida have the highest cumulative case count. This is because there is no controlling for population so it would make sense that the states with the highest population would have the most cases.
+  
+  12. Now add the population of each state to the dataset and color the states by most recent cumulative cases/10,000 people. See the code for doing this with the Starbucks data. You will need to make some modifications.
+  
+
+```r
+covid_bystate2 <- covid19 %>% 
+  group_by(state) %>% 
+  arrange(desc(date)) %>% 
+  mutate(state = str_to_lower(state)) %>% 
+  top_n(n = 1, wt = date) %>% 
+  left_join(census_pop_est_2018, 
+            by = "state") %>% 
+  mutate(cases_per10k = (cases/est_pop_2018)*10000)
+
+covid_bystate2 %>% 
+  ggplot() +
+  geom_map(map = state_covid,
+           aes(map_id = state, fill = cases_per10k)) +
+  expand_limits(x = state_covid$long, y = state_covid$lat) +
+  theme_map() +
+  labs(title = "Cumulative COVID Cases per 10,000 by State as of 2/17")
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
   
   13. **CHALLENGE** Choose 4 dates spread over the time period of the data and create the same map as in exercise 12 for each of the dates. Display the four graphs together using faceting. What do you notice?
   
+
+```r
+covid_bystate3 <- covid19 %>% 
+  group_by(state) %>% 
+  filter(date %in% c(as.Date("2020-12-15"),
+                     as.Date("2020-10-15"),
+                     as.Date("2020-8-15"),
+                     as.Date("2020-6-15"))) %>% 
+  mutate(state = str_to_lower(state)) %>%
+  left_join(census_pop_est_2018, 
+            by = "state") %>% 
+  mutate(cases_per10k = (cases/est_pop_2018)*10000)
+
+covid_bystate3 %>% 
+  ggplot() +
+  geom_map(map = state_covid,
+           aes(map_id = state, fill = cases_per10k)) +
+  expand_limits(x = state_covid$long, y = state_covid$lat) +
+  theme_map() +
+  facet_wrap(vars(date)) +
+  labs(title = "Cumulative COVID Cases per 10,000 by State")
+```
+
+![](DS_Week4_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+
 ## Minneapolis police stops
 
 These exercises use the datasets `MplsStops` and `MplsDemo` from the `carData` library. Search for them in Help to find out more information.
